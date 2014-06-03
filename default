@@ -1,0 +1,23 @@
+
+User
+  should respond to #name
+  should respond to #email
+  should be valid
+  when email format is invalid
+    should be invalid
+  when email format is valid
+    should be valid
+  when name is not present
+    should not be valid
+  when name is too long
+    should not be valid
+  when email is not present
+    should not be valid
+  when email address is already taken
+    should not be valid
+
+Finished in 0.07294 seconds
+9 examples, 0 failures
+
+Randomized with seed 52244
+
