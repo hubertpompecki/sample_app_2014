@@ -66,6 +66,9 @@ describe "Authentication" do
     describe 'for non-signed-in users' do
       let(:user) { FactoryGirl.create(:user) }
 
+      it { should_not have_link('Settings') }
+      it { should_not have_link('Profile') }
+      
       describe 'in the Users controller' do
         
         describe 'visiting the edit page' do
@@ -83,6 +86,19 @@ describe "Authentication" do
           it { should have_title('Sign in') }
         end
       end
+
+      describe 'in the Microposts controler' do
+        
+        describe 'submitting to the create action' do
+          before { post microposts_path }
+          specify { expect(response).to redirect_to(signin_path) }
+        end
+
+        describe 'submitting to the destroy action' do
+          before { delete micropost_path(FactoryGirl.create(:micropost)) }
+          specify { expect(response).to redirect_to(signin_path) }
+        end
+      end
     end
 
     describe 'as non-admin user' do
@@ -94,6 +110,36 @@ describe "Authentication" do
       describe 'submitting a DELETE request to the Users#destroy action' do
         before { delete user_path(user) }
         specify { expect(response).to redirect_to(root_url) }
+      end
+    end
+
+    describe 'as signed-in user' do
+      let(:user) { FactoryGirl.create(:user) }
+      before { sign_in user, no_capybara: true }
+
+      describe 'submitting a GET request to Users#new' do
+        before { get new_user_path }
+        specify { expect(response).to redirect_to(root_url) }
+      end
+
+      describe 'submitting a POST request to Users#create' do
+        let(:params) { { user: { name: 'name', email: 'email@example.com',
+                               password: 'foobar',
+                               password_confirmation: 'foobar' } } }
+
+        specify { expect { post users_path, params }.not_to change(User, :count) }
+
+        before { post users_path, params }
+        specify { expect(response).to redirect_to(root_url) }
+      end
+    end
+
+    describe 'as an admin user' do
+      let(:admin) { FactoryGirl.create(:admin) }
+      before { sign_in admin, no_capybara: true }
+
+      describe 'submitting a DELETE request to delete self' do
+        specify { expect { delete user_path(admin) }.not_to change(User, :count) }
       end
     end
   end
